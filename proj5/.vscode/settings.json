@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.usf": "hlsl",
+        "*.ush": "hlsl",
+        "*.compute": "hlsl",
+        "*.hlsl": "hlsl",
+        "*.raytrace": "hlsl",
+        "iostream": "cpp"
+    }
+}
