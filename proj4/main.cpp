@@ -431,7 +431,7 @@ int main(int argc, char** argv){
         int albedoloc = glGetUniformLocation(program, "in_albedo");
         glUniform3f(albedoloc, 0.5, 0.4, 0.8);
         int roughnessloc = glGetUniformLocation(program, "in_roughness");
-        glUniform1f(roughnessloc, 5);
+        glUniform1f(roughnessloc, 500);
 
         cosphi = cos(light_phi);
         sinphi = sin(light_phi);

@@ -268,53 +268,59 @@ int main(int argc, char** argv) {
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Get Texture from obj
-	std::vector<GLuint> diffusetex;
-	std::vector<GLuint> speculartex;
+	std::vector<cyTriMesh::Mtl> mats(mesh.NM());
+	std::vector<GLuint> diffusetex(mesh.NM());
+	std::vector<GLuint> speculartex(mesh.NM());
 
 	std::string parent = "D:/learn/CS6610/proj5/teapot/";
 
 	for(int i = 0; i< mesh.NM(); i++){
 		cyTriMesh::Mtl m = mesh.M(i);
-		diffusetex.push_back(0);
-		speculartex.push_back(0);
+		diffusetex[i] = 0;
+		speculartex[i] = 0;
+		mats[i] = m;
 
 		std::vector<unsigned char> diffusetexbuffer;
 		std::vector<unsigned char> speculartexbuffer;
 		std::vector<unsigned char> diffusedata;
 		std::vector<unsigned char> speculardata;
 
-		std::string map_kd = m.map_Kd;
-		unsigned int width_d, height_d;
-		lodepng::load_file(diffusetexbuffer, parent + map_kd);
-		lodepng::decode(diffusedata, width_d, height_d, diffusetexbuffer);
-		if (diffusedata.size()) {
-			GLuint d;
-			glGenTextures(1, &d);
-			glBindTexture(GL_TEXTURE_2D, d);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_d, height_d, 0, GL_RGBA, GL_UNSIGNED_BYTE, diffusedata.data());
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glBindTexture(GL_TEXTURE_2D, 0);
-			diffusetex[i] = d;
+		if (m.map_Kd != nullptr){
+			std::string map_kd = m.map_Kd;
+			unsigned int width_d, height_d;
+			lodepng::load_file(diffusetexbuffer, parent + map_kd);
+			lodepng::decode(diffusedata, width_d, height_d, diffusetexbuffer);
+			if (diffusedata.size()) {
+				GLuint d;
+				glGenTextures(1, &d);
+				glBindTexture(GL_TEXTURE_2D, d);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_d, height_d, 0, GL_RGBA, GL_UNSIGNED_BYTE, diffusedata.data());
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glBindTexture(GL_TEXTURE_2D, 0);
+				diffusetex[i] = d;
+			}
 		}
 
-		std::string map_ks = m.map_Ks;
-		unsigned int width_s, height_s;
-		lodepng::load_file(speculartexbuffer, parent + map_ks);
-		lodepng::decode(speculardata, width_s, height_s, speculartexbuffer);
-		if (speculardata.size()) {
-			GLuint s;
-			glGenTextures(1, &s);
-			glBindTexture(GL_TEXTURE_2D, s);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_s, height_s, 0, GL_RGBA, GL_UNSIGNED_BYTE, speculardata.data());
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glBindTexture(GL_TEXTURE_2D, 0);
-			speculartex[i] = s;
+		if (m.map_Ks != nullptr) {
+			std::string map_ks = m.map_Ks;
+			unsigned int width_s, height_s;
+			lodepng::load_file(speculartexbuffer, parent + map_ks);
+			lodepng::decode(speculardata, width_s, height_s, speculartexbuffer);
+			if (speculardata.size()) {
+				GLuint s;
+				glGenTextures(1, &s);
+				glBindTexture(GL_TEXTURE_2D, s);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_s, height_s, 0, GL_RGBA, GL_UNSIGNED_BYTE, speculardata.data());
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glBindTexture(GL_TEXTURE_2D, 0);
+				speculartex[i] = s;
+			}
 		}
 	}
 
@@ -416,6 +422,7 @@ int main(int argc, char** argv) {
 	modelTex.cell[4] = 1;
 	modelTex.cell[9] = 1;
 	modelTex.cell[15] = 1;
+	//modelTex.AddTranslation({ 0, -500, 0 });
 	cy::Matrix4f viewTex = cy::Matrix4f::Identity();
 	cy::Matrix4f projTex = cy::Matrix4f::Identity();
 	cyMatrix4f rotationTex = cy::Matrix4f::Identity();
@@ -450,7 +457,7 @@ int main(int argc, char** argv) {
 				else if (deltaX < 0) {
 					distTex *= 1.1;
 				}
-				distTex = std::max(0.1f, std::min(distTex, 1000.0f));
+				distTex = std::max(0.1f, std::min(distTex, 10000.0f));
 			}
 			deltaX = 0;
 			deltaY = 0;
@@ -466,7 +473,6 @@ int main(int argc, char** argv) {
 
 		// MVP of mesh
 		glUseProgram(programTex);
-		glBindVertexArray(modelVAO);
 
 		GLint origFB;
 		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &origFB);
@@ -497,9 +503,12 @@ int main(int argc, char** argv) {
 		cyMatrix4f translateTex = cyMatrix4f::Translation({ -eyex, -eyey, -eyez });
 
 		viewTex = rotationTex * translateTex;
-		projTex.SetPerspective(M_PI / 2, mywindow->width * 1.0 / mywindow->height, 0.1, 1000);
+		projTex.SetPerspective(M_PI / 2, mywindow->width * 1.0 / mywindow->height, 0.1, 100000);
+		int texid = 0;
 
 		for (int i = 0; i < mesh.NM(); i++) {
+			glBindVertexArray(modelVAO);
+
 			int modellocTex = glGetUniformLocation(programTex, "model");
 			int viewlocTex = glGetUniformLocation(programTex, "view");
 			int projlocTex = glGetUniformLocation(programTex, "proj");
@@ -513,34 +522,49 @@ int main(int argc, char** argv) {
 			glUniform3f(lightlocTex, lightx, lighty, lightz);
 
 			if (diffusetex[i] > 0) {
-				glActiveTexture(GL_TEXTURE0);
+				int albedoloc = glGetUniformLocation(programTex, "albedo_color");
+				glUniform3f(albedoloc, 1, 1, 1);
+
+				glActiveTexture(GL_TEXTURE0 + texid);
 				glBindTexture(GL_TEXTURE_2D, diffusetex[i]);
-				GLuint sampler0 = glGetUniformLocation(program, "basecolorTex");
-				glUniform1i(sampler0, 0);
+				GLuint sampler0 = glGetUniformLocation(programTex, "basecolorTex");
+				glUniform1i(sampler0, texid);
+				texid++;
 			}
 			else {
-				glActiveTexture(GL_TEXTURE0);
+				int albedoloc = glGetUniformLocation(programTex, "albedo_color");
+				glUniform3f(albedoloc, mats[i].Kd[0], mats[i].Kd[1], mats[i].Kd[2]);
+
+				glActiveTexture(GL_TEXTURE0 + texid);
 				glBindTexture(GL_TEXTURE_2D, whiteTex);
-				GLuint sampler0 = glGetUniformLocation(program, "basecolorTex");
-				glUniform1i(sampler0, 0);
+				GLuint sampler0 = glGetUniformLocation(programTex, "basecolorTex");
+				glUniform1i(sampler0, texid);
+				texid++;
 			}
 			if (speculartex[i] > 0) {
-				glActiveTexture(GL_TEXTURE1);
+				int specloc = glGetUniformLocation(programTex, "specular_color");
+				glUniform3f(specloc, 1, 1, 1);
+
+				glActiveTexture(GL_TEXTURE0 + texid);
 				glBindTexture(GL_TEXTURE_2D, speculartex[i]);
-				GLuint sampler1 = glGetUniformLocation(program, "specularcolorTex");
-				glUniform1i(sampler1, 1);
+				GLuint sampler1 = glGetUniformLocation(programTex, "specularcolorTex");
+				glUniform1i(sampler1, texid);
+				texid++;
 			}
 			else {
-				glActiveTexture(GL_TEXTURE1);
+				int specloc = glGetUniformLocation(programTex, "specular_color");
+				glUniform3f(specloc, mats[i].Ks[0], mats[i].Ks[1], mats[i].Ks[2]);
+
+				glActiveTexture(GL_TEXTURE0 + texid);
 				glBindTexture(GL_TEXTURE_2D, whiteTex);
-				GLuint sampler1 = glGetUniformLocation(program, "specularcolorTex");
-				glUniform1i(sampler1, 1);
+				GLuint sampler1 = glGetUniformLocation(programTex, "specularcolorTex");
+				glUniform1i(sampler1, texid);
+				texid++;
 			}
 
-			glDrawElements(GL_TRIANGLES, mesh.NF() * 3, GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES, mesh.GetMaterialFaceCount(i) * 3, GL_UNSIGNED_INT, (void*)(mesh.GetMaterialFirstFace(i) * 3 * sizeof(unsigned int)));
+			glBindVertexArray(0);
 		}
-
-		glBindVertexArray(0);
 
 		glBindTexture(GL_TEXTURE_2D, renderTexture);
 		glGenerateMipmap(GL_TEXTURE_2D);
