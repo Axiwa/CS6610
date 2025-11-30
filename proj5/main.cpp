@@ -177,7 +177,7 @@ bool LoadShaders(const char* vertfile, const char* fragfile, GLuint& vertshader,
 int main(int argc, char** argv) {
 
 	cyTriMesh mesh;
-	mesh.LoadFromFileObj("D:/learn/CS6610/proj5/teapot/teapot.obj");
+	mesh.LoadFromFileObj("C:/Learn/CS6610/proj5/teapot/teapot.obj");
 	std::vector<VertexModel> modelvertices(mesh.NV());
 	// Align indecies
 	for (int i = 0; i < mesh.NF(); i++) {
@@ -213,7 +213,7 @@ int main(int argc, char** argv) {
 
 	GLuint program = glCreateProgram();
 	GLuint vertshader, fragshader;
-	if (!LoadShaders("D:/learn/CS6610/proj5/plane.vert", "D:/learn/CS6610/proj5/plane.frag", vertshader, fragshader)) {
+	if (!LoadShaders("C:/Learn/CS6610/proj5/plane.vert", "c:/Learn/CS6610/proj5/plane.frag", vertshader, fragshader)) {
 		std::cerr << "Failed to load shaders!" << std::endl;
 		exit(1);
 	}
@@ -237,7 +237,7 @@ int main(int argc, char** argv) {
 	// Texture
 	GLuint programTex = glCreateProgram();
 	GLuint vertshaderTex, fragshaderTex;
-	if (!LoadShaders("D:/learn/CS6610/proj5/teapot.vert", "D:/learn/CS6610/proj5/teapot.frag", vertshaderTex, fragshaderTex)) {
+	if (!LoadShaders("C:/Learn/CS6610/proj5/teapot.vert", "C:/Learn/CS6610/proj5/teapot.frag", vertshaderTex, fragshaderTex)) {
 		std::cerr << "Failed to load shaders!" << std::endl;
 		exit(1);
 	}
@@ -271,7 +271,7 @@ int main(int argc, char** argv) {
 	std::vector<GLuint> diffusetex;
 	std::vector<GLuint> speculartex;
 
-	std::string parent = "D:/learn/CS6610/proj5/teapot/";
+	std::string parent = "C:/Learn/CS6610/proj5/teapot/";
 
 	for(int i = 0; i< mesh.NM(); i++){
 		cyTriMesh::Mtl m = mesh.M(i);
@@ -553,6 +553,7 @@ int main(int argc, char** argv) {
 		glViewport(0, 0, mywindow->width, mywindow->height);
 		glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDisable(GL_CULL_FACE);
 
 		float deltaPhi = deltaX / mywindow->width * 2 * M_PI;
 		float deltaTheta = deltaY / mywindow->height * M_PI;
