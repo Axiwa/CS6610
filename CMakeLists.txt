@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # 设置 GLFW 路径为缓存变量
 set(GLFW_ROOT "${PROJECT_SOURCE_DIR}/External/glfw-3.4" CACHE PATH "GLFW root directory")
 
+add_compile_definitions(ASSET_ROOT="${CMAKE_SOURCE_DIR}/Assets/")
+
 # 添加子项目
 add_subdirectory(proj4)
 add_subdirectory(proj5)

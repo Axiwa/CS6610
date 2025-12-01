@@ -16,7 +16,7 @@ void main(){
     vec3 specular = vec3(1, 1, 1) * texture(specularcolorTex, out_coord).xyz;
     vec3 albedo = vec3(1, 1, 1) * texture(basecolorTex, out_coord).xyz;
     vec3 radiance = vec3(1, 1, 1);
-    float shininess = 5;
+    float shininess = 50;
 
     vec3 eye_dir = normalize(in_eye - world_pos);
     vec3 h = normalize(in_light + eye_dir);
