@@ -4,15 +4,10 @@ add_executable(proj5
     lodepng.cpp
 )
 
-# 设置 GLFW 的路径（注意：用双斜杠或转义）
-set(GLFW_ROOT "D:/tool/glfw-3.4.bin")
-
-# 包含 GLFW 的头文件
-target_include_directories(proj5 PRIVATE 
+target_include_directories(proj5 PRIVATE
     ${GLFW_ROOT}/include
     ${CMAKE_SOURCE_DIR}/include
 )
-
 
 # 链接 GLFW 静态或动态库
 target_link_directories(proj5 PRIVATE ${GLFW_ROOT}/lib-vc2022)

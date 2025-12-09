@@ -2,19 +2,23 @@
 #include "cy/cyTriMesh.h"
 #include "cy/cyMatrix.h"
 #include "cy/cyVector.h"
+#include "orbitcamera.h"
 
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include "plane.h"
 #include "lodepng.h"
 
-#define M_PI 3.1415926
-
 struct VertexModel {
 	cyVec3f pos;
 	cyVec3f normal;
 	cyVec3f st;
 };
+
+std::string asset(const std::string& p)
+{
+	return std::string(ASSET_ROOT) + p;
+}
 
 struct myWindow {
 	myWindow():
@@ -23,7 +27,7 @@ struct myWindow {
 		mouseX(0.0),
 		mouseY(0.0),
 		window(nullptr),
-		zoom(1)
+		m_camera(M_PI/2, width*1.0/height, 0.1, 10000)
 	{}
 	myWindow(int width_, int height_, const char* title):
 		width(width_),
@@ -31,7 +35,7 @@ struct myWindow {
 		mouseX(0.0),
 		mouseY(0.0),
 		window(nullptr),
-		zoom(1)
+		m_camera(M_PI/2, width*1.0/height, 0.1, 10000)
 	{
 		window = glfwCreateWindow(width, height, title, nullptr, nullptr);
 		glfwSetWindowUserPointer(window, this);
@@ -56,7 +60,7 @@ struct myWindow {
 	int width, height;
 	double mouseX, mouseY, lastX = 0, lastY = 0;
 	bool isDraggingLeft = false, isDraggingRight = false;
-	double zoom;
+	orbit_camera m_camera;
 
 private:
 	static void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {
@@ -64,6 +68,7 @@ private:
 		self->width = width;
 		self->height = height;
 		glViewport(0, 0, width, height);
+		self->m_camera.on_aspect_change(width * 1.0 / height);
 	}
 	static void CursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
 		myWindow* self = static_cast<myWindow*>(glfwGetWindowUserPointer(window));
@@ -97,10 +102,10 @@ private:
 	static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 		myWindow* self = static_cast<myWindow*>(glfwGetWindowUserPointer(window));
 		if (yoffset < 0) {
-			self->zoom *= 1.1f;
+			self->m_camera._dist *= 1.1f;
 		}
 		else {
-			self->zoom /= 1.1f;
+			self->m_camera._dist /= 1.1f;
 		}
 	}
 };
@@ -177,7 +182,7 @@ bool LoadShaders(const char* vertfile, const char* fragfile, GLuint& vertshader,
 int main(int argc, char** argv) {
 
 	cyTriMesh mesh;
-	mesh.LoadFromFileObj("D:/learn/CS6610/proj5/teapot/teapot.obj");
+	mesh.LoadFromFileObj(asset("teapot/teapot.obj").c_str());
 	std::vector<VertexModel> modelvertices(mesh.NV());
 	// Align indecies
 	for (int i = 0; i < mesh.NF(); i++) {
@@ -213,7 +218,7 @@ int main(int argc, char** argv) {
 
 	GLuint program = glCreateProgram();
 	GLuint vertshader, fragshader;
-	if (!LoadShaders("D:/learn/CS6610/proj5/plane.vert", "D:/learn/CS6610/proj5/plane.frag", vertshader, fragshader)) {
+	if (!LoadShaders("C:/Learn/CS6610/proj5/plane.vert", "C:/Learn/CS6610/proj5/plane.frag", vertshader, fragshader)) {
 		std::cerr << "Failed to load shaders!" << std::endl;
 		exit(1);
 	}
@@ -237,7 +242,7 @@ int main(int argc, char** argv) {
 	// Texture
 	GLuint programTex = glCreateProgram();
 	GLuint vertshaderTex, fragshaderTex;
-	if (!LoadShaders("D:/learn/CS6610/proj5/teapot.vert", "D:/learn/CS6610/proj5/teapot.frag", vertshaderTex, fragshaderTex)) {
+	if (!LoadShaders("C:/Learn/CS6610/proj5/teapot.vert", "C:/Learn/CS6610/proj5/teapot.frag", vertshaderTex, fragshaderTex)) {
 		std::cerr << "Failed to load shaders!" << std::endl;
 		exit(1);
 	}
@@ -272,7 +277,7 @@ int main(int argc, char** argv) {
 	std::vector<GLuint> diffusetex(mesh.NM());
 	std::vector<GLuint> speculartex(mesh.NM());
 
-	std::string parent = "D:/learn/CS6610/proj5/teapot/";
+	std::string parent = "teapot/";
 
 	for(int i = 0; i< mesh.NM(); i++){
 		cyTriMesh::Mtl m = mesh.M(i);
@@ -427,28 +432,26 @@ int main(int argc, char** argv) {
 	cy::Matrix4f projTex = cy::Matrix4f::Identity();
 	cyMatrix4f rotationTex = cy::Matrix4f::Identity();
 
-	float phi = 0, theta = M_PI / 2, fixed = 10;
+	float phi = 0, theta = M_PI / 2, fixed = 2;
 	float phiTex = 0, thetaTex = M_PI / 2, distTex = 50;
 	float philight = 0, thetalight = M_PI / 2;
 
+	orbit_camera cameraTex(M_PI / 2, mywindow->width * 1.0 / mywindow->height, 0.1, 10000, 0, M_PI / 4, 50);
+
 	while (!glfwWindowShouldClose(mywindow->window)) {
 		// Transformation
-		double deltaX, deltaY, zoom, deltaXTex = 0, deltaYTex = 0;
+		double deltaX, deltaY, zoom;
 		mywindow->deltaMouse(deltaX, deltaY);
-
-		// Plane zoom
-		float distance = fixed * mywindow->zoom;
 
 		if (glfwGetKey(mywindow->window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 			philight += deltaX / mywindow->width * 2 * M_PI;
 			thetalight += deltaY / mywindow->height * 2 * M_PI;
-			deltaX = 0;
-			deltaY = 0;
 		}
 		else if (glfwGetKey(mywindow->window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS) { // RenderTexture
 			if (mywindow->isDraggingLeft) {
-				deltaXTex = deltaX;
-				deltaYTex = deltaY;
+				float deltaPhiTex = deltaX / mywindow->width * 2 * M_PI;
+				float deltaThetaTex = deltaY / mywindow->height * 2 * M_PI;
+				cameraTex.on_rotation_change(deltaPhiTex, deltaThetaTex);
 			}
 			else if (mywindow->isDraggingRight) {
 				if (deltaX > 0) {
@@ -457,14 +460,17 @@ int main(int argc, char** argv) {
 				else if (deltaX < 0) {
 					distTex *= 1.1;
 				}
-				distTex = std::max(0.1f, std::min(distTex, 10000.0f));
+				distTex = std::max(0.1f, std::min(distTex, 1000.0f));
+				cameraTex.on_distance_change(distTex);
 			}
-			deltaX = 0;
-			deltaY = 0;
 		}
 		else { // Plane
-			deltaXTex = 0;
-			deltaYTex = 0;
+			float deltaPhi = deltaX / mywindow->width * 2 * M_PI;
+			float deltaTheta = deltaY / mywindow->height * M_PI;
+
+			// Plane zoom
+			mywindow->m_camera.on_rotation_change(deltaPhi, deltaTheta);
+			mywindow->m_camera.on_distance_change(mywindow->m_camera._dist);
 		}
 
 		float lightx = sin(thetalight) * sin(philight);
@@ -485,27 +491,6 @@ int main(int argc, char** argv) {
 		glClearColor(0.2, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		float deltaPhiTex = deltaXTex / mywindow->width * 2 * M_PI;
-		float deltaThetaTex = deltaYTex / mywindow->height * 2 * M_PI;
-		phiTex -= deltaPhiTex;
-		thetaTex -= deltaThetaTex;
-
-		float sinphiTex = sin(phiTex);
-		float sinthetaTex = sin(thetaTex);
-		float cosphiTex = cos(phiTex);
-		float costhetaTex = cos(thetaTex);
-		cyMatrix4f rt1 = cyMatrix4f::Identity().RotationY(deltaPhiTex);
-		cyMatrix4f rt2 = cyMatrix4f::Identity().RotationX(deltaThetaTex);
-		rotationTex = rt2 * rotationTex * rt1;
-		float eyex = sinthetaTex * sinphiTex * distTex;
-		float eyey = costhetaTex * distTex;
-		float eyez = sinthetaTex * cosphiTex * distTex;
-		cyMatrix4f translateTex = cyMatrix4f::Translation({ -eyex, -eyey, -eyez });
-
-		viewTex = rotationTex * translateTex;
-		projTex.SetPerspective(M_PI / 2, mywindow->width * 1.0 / mywindow->height, 0.1, 100000);
-		int texid = 0;
-
 		for (int i = 0; i < mesh.NM(); i++) {
 			glBindVertexArray(modelVAO);
 
@@ -513,11 +498,12 @@ int main(int argc, char** argv) {
 			int viewlocTex = glGetUniformLocation(programTex, "view");
 			int projlocTex = glGetUniformLocation(programTex, "proj");
 			glUniformMatrix4fv(modellocTex, 1, GL_FALSE, &modelTex.cell[0]);
-			glUniformMatrix4fv(viewlocTex, 1, GL_FALSE, &viewTex.cell[0]);
-			glUniformMatrix4fv(projlocTex, 1, GL_FALSE, &projTex.cell[0]);
+			glUniformMatrix4fv(viewlocTex, 1, GL_FALSE, &cameraTex.get_view().cell[0]);
+			glUniformMatrix4fv(projlocTex, 1, GL_FALSE, &cameraTex.get_projection().cell[0]);
 
 			int eyelocTex = glGetUniformLocation(programTex, "in_eye");
-			glUniform3f(eyelocTex, eyex, eyey, eyez);
+			cyVec3f pos = cameraTex.get_pos();
+			glUniform3f(eyelocTex, pos.x, pos.y, pos.z);
 			int lightlocTex = glGetUniformLocation(programTex, "in_light");
 			glUniform3f(lightlocTex, lightx, lighty, lightz);
 
@@ -577,31 +563,14 @@ int main(int argc, char** argv) {
 		glViewport(0, 0, mywindow->width, mywindow->height);
 		glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		float deltaPhi = deltaX / mywindow->width * 2 * M_PI;
-		float deltaTheta = deltaY / mywindow->height * M_PI;
-		phi -= deltaPhi;
-		theta -= deltaTheta;
-
-		float sinphi = sin(phi);
-		float sintheta = sin(theta);
-		float cosphi = cos(phi);
-		float costheta = cos(theta);
-
-		cyMatrix4f r1 = cyMatrix4f::Identity().RotationY(deltaPhi);
-		cyMatrix4f r2 = cyMatrix4f::Identity().RotationX(deltaTheta);
-		rotation = r2 * rotation * r1;
-
-		view.SetTranslation({ -sintheta * sinphi * distance, -costheta * distance, -sintheta * cosphi * distance });
-		view = rotation * view;
-		proj.SetPerspective(M_PI / 2, mywindow->width * 1.0 / mywindow->height, 0.1, 1000);
+		glDisable(GL_CULL_FACE);
 
 		int modelloc = glGetUniformLocation(program, "model");
 		glUniformMatrix4fv(modelloc, 1, GL_FALSE, &model.cell[0]);
 		int viewloc = glGetUniformLocation(program, "view");
-		glUniformMatrix4fv(viewloc, 1, GL_FALSE, &view.cell[0]);
+		glUniformMatrix4fv(viewloc, 1, GL_FALSE, &mywindow->m_camera.get_view().cell[0]);
 		int projloc = glGetUniformLocation(program, "proj");
-		glUniformMatrix4fv(projloc, 1, GL_FALSE, &proj.cell[0]);
+		glUniformMatrix4fv(projloc, 1, GL_FALSE, &mywindow->m_camera.get_projection().cell[0]);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, renderTexture);

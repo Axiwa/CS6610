@@ -4,8 +4,6 @@ add_executable(proj4
     lodepng.cpp
 )
 
-# 设置 GLFW 的路径（注意：用双斜杠或转义）
-set(GLFW_ROOT "D:/tool/glfw-3.4.bin")
 
 # 包含 GLFW 的头文件
 target_include_directories(proj4 PRIVATE 
