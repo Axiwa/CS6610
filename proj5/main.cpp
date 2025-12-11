@@ -182,7 +182,7 @@ bool LoadShaders(const char* vertfile, const char* fragfile, GLuint& vertshader,
 int main(int argc, char** argv) {
 
 	cyTriMesh mesh;
-	mesh.LoadFromFileObj(asset("teapot/teapot.obj").c_str());
+	mesh.LoadFromFileObj(asset("yoda/yoda.obj").c_str());
 	std::vector<VertexModel> modelvertices(mesh.NV());
 	// Align indecies
 	for (int i = 0; i < mesh.NF(); i++) {
@@ -218,7 +218,7 @@ int main(int argc, char** argv) {
 
 	GLuint program = glCreateProgram();
 	GLuint vertshader, fragshader;
-	if (!LoadShaders("C:/Learn/CS6610/proj5/plane.vert", "C:/Learn/CS6610/proj5/plane.frag", vertshader, fragshader)) {
+	if (!LoadShaders("D:/learn/CS6610/proj5/plane.vert", "D:/learn/CS6610/proj5/plane.frag", vertshader, fragshader)) {
 		std::cerr << "Failed to load shaders!" << std::endl;
 		exit(1);
 	}
@@ -242,7 +242,7 @@ int main(int argc, char** argv) {
 	// Texture
 	GLuint programTex = glCreateProgram();
 	GLuint vertshaderTex, fragshaderTex;
-	if (!LoadShaders("C:/Learn/CS6610/proj5/teapot.vert", "C:/Learn/CS6610/proj5/teapot.frag", vertshaderTex, fragshaderTex)) {
+	if (!LoadShaders("D:/learn/CS6610/proj5/teapot.vert", "D:/learn/CS6610/proj5/teapot.frag", vertshaderTex, fragshaderTex)) {
 		std::cerr << "Failed to load shaders!" << std::endl;
 		exit(1);
 	}
@@ -277,7 +277,7 @@ int main(int argc, char** argv) {
 	std::vector<GLuint> diffusetex(mesh.NM());
 	std::vector<GLuint> speculartex(mesh.NM());
 
-	std::string parent = "teapot/";
+	std::string parent = "yoda/";
 
 	for(int i = 0; i< mesh.NM(); i++){
 		cyTriMesh::Mtl m = mesh.M(i);
@@ -293,7 +293,7 @@ int main(int argc, char** argv) {
 		if (m.map_Kd != nullptr){
 			std::string map_kd = m.map_Kd;
 			unsigned int width_d, height_d;
-			lodepng::load_file(diffusetexbuffer, parent + map_kd);
+			lodepng::load_file(diffusetexbuffer, asset(parent + map_kd));
 			lodepng::decode(diffusedata, width_d, height_d, diffusetexbuffer);
 			if (diffusedata.size()) {
 				GLuint d;
@@ -312,7 +312,7 @@ int main(int argc, char** argv) {
 		if (m.map_Ks != nullptr) {
 			std::string map_ks = m.map_Ks;
 			unsigned int width_s, height_s;
-			lodepng::load_file(speculartexbuffer, parent + map_ks);
+			lodepng::load_file(speculartexbuffer, asset(parent + map_ks));
 			lodepng::decode(speculardata, width_s, height_s, speculartexbuffer);
 			if (speculardata.size()) {
 				GLuint s;
@@ -433,10 +433,10 @@ int main(int argc, char** argv) {
 	cyMatrix4f rotationTex = cy::Matrix4f::Identity();
 
 	float phi = 0, theta = M_PI / 2, fixed = 2;
-	float phiTex = 0, thetaTex = M_PI / 2, distTex = 50;
+	float phiTex = 0, thetaTex = M_PI / 2, distTex = 5000;
 	float philight = 0, thetalight = M_PI / 2;
 
-	orbit_camera cameraTex(M_PI / 2, mywindow->width * 1.0 / mywindow->height, 0.1, 10000, 0, M_PI / 4, 50);
+	orbit_camera cameraTex(M_PI / 2, mywindow->width * 1.0 / mywindow->height, 0.1, 10000, 0, M_PI / 4, distTex);
 
 	while (!glfwWindowShouldClose(mywindow->window)) {
 		// Transformation
@@ -460,7 +460,7 @@ int main(int argc, char** argv) {
 				else if (deltaX < 0) {
 					distTex *= 1.1;
 				}
-				distTex = std::max(0.1f, std::min(distTex, 1000.0f));
+				distTex = std::max(0.1f, std::min(distTex, 10000.0f));
 				cameraTex.on_distance_change(distTex);
 			}
 		}
@@ -490,6 +490,8 @@ int main(int argc, char** argv) {
 		glViewport(0, 0, 1024, 1024);
 		glClearColor(0.2, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		int texid = 0;
 
 		for (int i = 0; i < mesh.NM(); i++) {
 			glBindVertexArray(modelVAO);
