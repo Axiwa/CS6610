@@ -8,7 +8,7 @@
 struct orbit_camera {
     float _phi = 0;
     float _theta = M_PI / 2;
-    float _dist = 2;
+    float _dist = 50;
     float _fov = M_PI / 2, _near = 0.1, _far = 10000;
 
     orbit_camera(float fov, float aspect, float near, float far):
@@ -62,6 +62,10 @@ struct orbit_camera {
 
     void on_distance_change(float new_distance){
         _dist = new_distance;
+        update_matrix();
+    }
+
+    void on_distance_change(){
         update_matrix();
     }
 

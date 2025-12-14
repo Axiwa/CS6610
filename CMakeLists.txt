@@ -13,3 +13,4 @@ add_compile_definitions(ASSET_ROOT="${CMAKE_SOURCE_DIR}/Assets/")
 # 添加子项目
 add_subdirectory(proj4)
 add_subdirectory(proj5)
+add_subdirectory(proj6)

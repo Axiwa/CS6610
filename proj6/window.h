@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glfw/glfw3.h>
-#include "oribitcamera.h"
+#include "orbitcamera.h"
 
 struct myWindow{
     GLFWwindow* window = nullptr;
@@ -16,6 +16,10 @@ struct myWindow{
     window(nullptr),
     scene_camera(M_PI / 2, width*1.0/height, 0.1, 10000)
     {
+        glfwInit();
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         window = glfwCreateWindow(width, height, "Default Window", nullptr, nullptr);
         glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
@@ -30,6 +34,10 @@ struct myWindow{
     window(nullptr),
     scene_camera(M_PI / 2, width*1.0/height, 0.1, 10000)
     {
+        glfwInit();
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         window = glfwCreateWindow(width, height, title, nullptr, nullptr);
         glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
@@ -42,12 +50,15 @@ struct myWindow{
         if (is_dragging_left || is_dragging_right){
             deltax = mouse_x - last_x;
             deltay = mouse_y - last_y;
+            last_x = mouse_x;
+            last_y = mouse_y;
         }
         else
         {
             deltax = 0;
             deltay = 0;
         }
+        std::cout<<mouse_x<<" "<<last_x<<std::endl;
     }
     
 private:
@@ -92,10 +103,10 @@ private:
     static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset){
         myWindow* self = static_cast<myWindow*>(glfwGetWindowUserPointer(window));
         if (yoffset < 0){
-            self->scene_camera._dist *= 1.0f;
+            self->scene_camera._dist *= 1.1f;
         }
         else{
-            self->scene_camera._dist /= 1.0f;
+            self->scene_camera._dist /= 1.1f;
         }
     }
 
