@@ -58,7 +58,6 @@ struct myWindow{
             deltax = 0;
             deltay = 0;
         }
-        std::cout<<mouse_x<<" "<<last_x<<std::endl;
     }
     
 private:
