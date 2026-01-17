@@ -182,7 +182,7 @@ bool LoadShaders(const char* vertfile, const char* fragfile, GLuint& vertshader,
 int main(int argc, char** argv) {
 
 	cyTriMesh mesh;
-	mesh.LoadFromFileObj(asset("yoda/yoda.obj").c_str());
+	mesh.LoadFromFileObj(asset("teapot/teapot.obj").c_str());
 	std::vector<VertexModel> modelvertices(mesh.NV());
 	// Align indecies
 	for (int i = 0; i < mesh.NF(); i++) {
@@ -218,7 +218,7 @@ int main(int argc, char** argv) {
 
 	GLuint program = glCreateProgram();
 	GLuint vertshader, fragshader;
-	if (!LoadShaders("D:/learn/CS6610/proj5/plane.vert", "D:/learn/CS6610/proj5/plane.frag", vertshader, fragshader)) {
+	if (!LoadShaders("C:/learn/CS6610/proj5/plane.vert", "c:/learn/CS6610/proj5/plane.frag", vertshader, fragshader)) {
 		std::cerr << "Failed to load shaders!" << std::endl;
 		exit(1);
 	}
@@ -242,7 +242,7 @@ int main(int argc, char** argv) {
 	// Texture
 	GLuint programTex = glCreateProgram();
 	GLuint vertshaderTex, fragshaderTex;
-	if (!LoadShaders("D:/learn/CS6610/proj5/teapot.vert", "D:/learn/CS6610/proj5/teapot.frag", vertshaderTex, fragshaderTex)) {
+	if (!LoadShaders("c:/learn/CS6610/proj5/teapot.vert", "c:/learn/CS6610/proj5/teapot.frag", vertshaderTex, fragshaderTex)) {
 		std::cerr << "Failed to load shaders!" << std::endl;
 		exit(1);
 	}

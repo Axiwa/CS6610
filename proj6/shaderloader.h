@@ -53,11 +53,9 @@ bool LoadShader(const char* vertfile, GLuint& shader, GLenum shaderType){
 }
 
 struct CameraBlock{
-	cyMatrix4f model;
 	cyMatrix4f view;
 	cyMatrix4f projection;
-	cyVec3f eyepos;
-	float padding;
+	cyVec4f eyepos;
 };
 
 struct DirectionalLightBlock{

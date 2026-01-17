@@ -15,17 +15,18 @@ out outdata o;
 
 layout(std140, binding = 0) uniform CameraBlock 
 { 
-    mat4 model;
     mat4 view;
     mat4 projection;
-    vec3 eyepos;
+    vec4 eyepos;
 } camera;
 
+uniform mat4 model;
+
 void main(){
-    gl_Position = camera.projection * camera.view * camera.model * vec4(pos, 1.0);
-    vec4 wpos = camera.model * vec4(pos, 1);
+    gl_Position = camera.projection * camera.view * model * vec4(pos, 1.0);
+    vec4 wpos = model * vec4(pos, 1);
     o.world_pos = wpos.xyz;
-    o.world_normal = mat3(transpose(inverse(camera.model))) *  normal;
+    o.world_normal = mat3(transpose(inverse(model))) *  normal;
     o.texcoord = texcoord.xy;
-    o.eye_pos = camera.eyepos;
+    o.eye_pos = camera.eyepos.xyz;
 }

@@ -66,7 +66,6 @@ struct VertexArray{
     VertexArray(){
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
-        glGenBuffers(1, &EBO);
     }
 
     ~VertexArray(){
@@ -105,9 +104,74 @@ struct VertexArray{
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         if (indicies.size() > 0){
+            glGenBuffers(1, &EBO);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies.size() * sizeof(unsigned int), indicies.data(), GL_STATIC_DRAW);    
         }
+
+        Unbind();
+    }
+
+    void CreateTriangle(cyVec3f x, cyVec3f y, cyVec3f z, GLuint program){
+        Bind();
+
+        vertices.clear();
+        vertices.resize(3);
+        vertices[0].pos = x;
+        vertices[1].pos = y;
+        vertices[2].pos = z;
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexModel), vertices.data(), GL_STATIC_DRAW);
+
+        GLuint pos = glGetAttribLocation(program, "pos");
+        glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, sizeof(VertexModel), (void*)0);
+        glEnableVertexAttribArray(pos);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        Unbind();
+    }
+
+    void CreateQuad(cyVec3f LT, cyVec3f LB, cyVec3f RB, cyVec3f RT, GLuint program){
+        Bind();
+
+        vertices.clear();
+        vertices.resize(4);
+        vertices[0].pos = LT;
+        vertices[1].pos = LB;
+        vertices[2].pos = RB;
+        vertices[3].pos = RT;
+
+        vertices[0].normal = (RB - LB).Cross(LT - LB);
+        vertices[1].normal = vertices[0].normal;
+        vertices[2].normal = vertices[0].normal;
+        vertices[3].normal = vertices[0].normal;
+
+        indicies.resize(6);
+        indicies[0] = 0;
+        indicies[1] = 1;
+        indicies[2] = 2;
+        indicies[3] = 0;
+        indicies[4] = 2;
+        indicies[5] = 3;
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexModel), vertices.data(), GL_STATIC_DRAW);
+
+        GLuint pos = glGetAttribLocation(program, "pos");
+        glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, sizeof(VertexModel), (void*)0);
+        glEnableVertexAttribArray(pos);
+        GLuint normal = glGetAttribLocation(program, "normal");
+        glVertexAttribPointer(normal, 3, GL_FLOAT, GL_FALSE, sizeof(VertexModel), (void*)offsetof(VertexModel, normal));
+        glEnableVertexAttribArray(normal);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        glGenBuffers(1, &EBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies.size() * sizeof(unsigned int), indicies.data(), GL_STATIC_DRAW);
 
         Unbind();
     }
