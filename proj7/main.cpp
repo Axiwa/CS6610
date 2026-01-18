@@ -47,7 +47,7 @@ int main(){
     meshmodel.cell[4] = 1;
     meshmodel.cell[9] = 1;
     meshmodel.cell[15] = 1;
-    // meshmodel.AddTranslation({0, -3, 0});
+    meshmodel.AddTranslation({0, 1, 0});
 
     CameraBlock camblock;
     UniformBufferManager objmgr;
@@ -95,7 +95,7 @@ int main(){
     matblock.albedo = cyVec4f(1, 1, 1, 1);
     matblock.ambient = cyVec4f(0.1, 0.1, 0.1, 1);
     matblock.shininess.x = 30;
-    matblock.specular = cyVec4f(1, 0, 0, 1);
+    matblock.specular = cyVec4f(1, 1, 1, 1);
     objmgr.UpdateMaterialUniformBlock<MaterialBlock>(matblock, 0);
 
     GLuint planeprogram = glCreateProgram();
@@ -110,9 +110,10 @@ int main(){
         exit(1);
     }
     VertexArray planearray;
-    cyTriMesh planemesh;
-    planemesh.LoadFromFileObj(asset("subdevidedplane.obj").c_str());
-    planearray.Create(planemesh, planeprogram);
+    // cyTriMesh planemesh;
+    // planemesh.LoadFromFileObj(asset("subdevidedplane.obj").c_str());
+    // planearray.Create(planemesh, planeprogram);
+    planearray.CreateQuad({-50, 0, -50},{-50, 0, 50},{50, 0, 50},{50, 0, -50}, planeprogram);
     cyMatrix4f planemodel = cyMatrix4f::Identity();
 
     GLuint planeshadowprogram = glCreateProgram();
@@ -126,13 +127,14 @@ int main(){
         exit(1);
     }
     VertexArray planeshadowarray;
-    planeshadowarray.Create(planemesh, planeshadowprogram);
+    // planeshadowarray.Create(planemesh, planeshadowprogram);
+    planeshadowarray.CreateQuad({-50, 0, -50},{-50, 0, 50},{50, 0, 50},{50, 0, -50}, planeshadowprogram);
 
     // shadow camera
     CameraBlock lightshadow;
     lightshadow.eyepos = lightblock.pos;
     lightshadow.view = cyMatrix4f::View(lightblock.pos.XYZ(), lightblock.pos.XYZ() + lightblock.direction.XYZ(), {0, 1, 0});
-    lightshadow.projection = cyMatrix4f::Perspective(M_PI / 2, 1, 20.f, 100.f);
+    lightshadow.projection = cyMatrix4f::Perspective(M_PI / 2, 1, 10.f, 100.f);
     GLuint shadowcamerabuffer;
     glGenBuffers(1, &shadowcamerabuffer);
     glBindBuffer(GL_UNIFORM_BUFFER, shadowcamerabuffer);
@@ -238,7 +240,7 @@ int main(){
         glClear(GL_DEPTH_BUFFER_BIT);
         glClearColor(0.1, 0, 0.2, 0);
 		glClear(GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_CULL_FACE);
+        glDisable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
 
         glUseProgram(objshadowprogram);
@@ -256,27 +258,26 @@ int main(){
         glViewport(0, 0, mywindow.width, mywindow.height);
         glClearColor(0.1, 0, 0.2, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_CULL_FACE);
+        glDisable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_DEPTH_WRITEMASK);
 
-        glUseProgram(objprogram);
-        int modelloc = glGetUniformLocation(objprogram, "model");
-        glUniformMatrix4fv(modelloc, 1, GL_FALSE, &meshmodel.cell[0]);
-        
         glActiveTexture(GL_TEXTURE);
         glBindTexture(GL_TEXTURE_2D, depthMap);
-        GLuint sampler = glGetUniformLocation(objprogram, "shadow");
-        glUniform1i(sampler, 0);
-
-        objarray.Draw();
 
         glUseProgram(planeprogram);
         int planeloc = glGetUniformLocation(planeprogram, "model");
         glUniformMatrix4fv(planeloc, 1, GL_FALSE, &planemodel.cell[0]); 
-        
         GLuint sampler2 = glGetUniformLocation(planeprogram, "shadow");
         glUniform1i(sampler2, 0);
         planearray.Draw();
+
+        glUseProgram(objprogram);
+        int modelloc = glGetUniformLocation(objprogram, "model");
+        glUniformMatrix4fv(modelloc, 1, GL_FALSE, &meshmodel.cell[0]);
+        GLuint sampler = glGetUniformLocation(objprogram, "shadow");
+        glUniform1i(sampler, 0);
+        objarray.Draw();
 		
 		glfwSwapBuffers(mywindow.window);
 		glfwPollEvents();

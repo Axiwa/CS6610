@@ -39,5 +39,4 @@ void main(){
     o.world_normal = normal * mat3(inverse(model));
 
     posinlightspace = lightcamera.projection * lightcamera.view * wpos;
-    posinlightspace.z -= 1;
 }
